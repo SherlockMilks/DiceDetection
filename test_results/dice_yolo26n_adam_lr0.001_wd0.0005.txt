@@ -1,0 +1,5 @@
+Model: dice_yolo26n_adam_lr0.001_wd0.0005
+Precision: 0.973320
+Recall: 0.960126
+mAP50: 0.988757
+mAP50-95: 0.658648

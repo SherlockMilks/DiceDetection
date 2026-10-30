@@ -1,0 +1,5 @@
+Model: dice_yolo26n_sgd_lr0.01_wd0.0005
+Precision: 0.989024
+Recall: 0.995334
+mAP50: 0.995000
+mAP50-95: 0.687080
