@@ -8,7 +8,7 @@ from ultralytics import YOLO
 PROJECT_DIR = Path(__file__).resolve().parent
 DATA_YAML = PROJECT_DIR / "data" / "dice_yolo" / "data.yaml"
 
-MODEL = "yolo26n.pt"
+MODEL = PROJECT_DIR / "data" / "yolo26n.pt"
 
 OUTPUT_DIR = PROJECT_DIR / "runs"
 
