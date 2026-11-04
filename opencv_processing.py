@@ -430,6 +430,6 @@ def opencv_method(path, debug=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    return output
+    return output, total
 
 # TODO : Az összes képre lefuttatni automatikusan és kiértékelni (Helyes/Összes és Helytelen/Összes arány)
