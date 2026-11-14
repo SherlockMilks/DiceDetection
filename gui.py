@@ -4,6 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 import glob
+from ultralytics import YOLO
 
 from opencv_processing import opencv_method
 
@@ -61,6 +62,16 @@ class DiceGUI:
         self.image_label = tk.Label(root)
         self.image_label.pack(expand=True)
 
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        runs_dir = os.path.join(base_dir, "runs")
+        model_path = os.path.join(
+            runs_dir,
+            "dice_yolo26n_adamw_lr0.001_wd0.0005",
+            "weights",
+            "best.pt"
+        )
+        self.yolo_model = YOLO(model_path)
+
     def load_image(self):
         self.image_path = filedialog.askopenfilename(
             filetypes=[("Images", "*.jpg *.png *.jpeg *.bmp")]
@@ -95,16 +106,46 @@ class DiceGUI:
 
         if self.method.get() == "opencv":
             # Szétbontjuk a visszakapott tuple-t (kép és összeg)
-            result, calculated_total = opencv_method(self.image_path, True)
-        else:
-            result = self.yolo_method(self.image_path)
-
-        cv2.imwrite("temp_result.jpg", result)
-        self.show_image("temp_result.jpg")
+            result, calculated_total = opencv_method(self.image_path, False)
+            cv2.imwrite("temp_result.jpg", result)
+            self.show_image("temp_result.jpg")
+        elif self.method.get() == "yolo":
+            result, calculated_total = self.yolo_method(self.image_path)
+            cv2.imwrite("temp_result.jpg", result)
+            self.show_image("temp_result.jpg")
 
     def yolo_method(self, path):
-        # TODO : Átírni, implementálni egy külön fájlba
-        pass
+        results = self.yolo_model.predict(
+            source=path,
+            verbose=False
+        )
+
+        result = results[0]
+
+        annotated_image = result.plot(
+            boxes=True,
+            labels=True,
+            conf=False
+        )
+
+        if result.boxes is not None and result.boxes.cls is not None:
+            class_ids = result.boxes.cls.tolist()
+            calculated_total = sum(int(class_id) + 1 for class_id in class_ids)
+        else:
+            calculated_total = 0
+
+        cv2.putText(
+            annotated_image,
+            f"Total: {calculated_total}",
+            (20, 40),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.2,
+            (0, 255, 0),
+            3,
+            cv2.LINE_AA
+        )
+
+        return annotated_image, calculated_total
 
     def get_expected_total_from_yolo(self, label_path):
         if not os.path.exists(label_path):
@@ -149,8 +190,10 @@ class DiceGUI:
         self.root.config(cursor="watch")
         self.root.update()
 
-        correct_predictions = 0
-        incorrect_predictions = 0
+        correct_predictions_opencv = 0
+        incorrect_predictions_opencv = 0
+        correct_predictions_yolo = 0
+        incorrect_predictions_yolo = 0
         skipped_images = 0
 
         for img_path in image_paths:
@@ -165,30 +208,50 @@ class DiceGUI:
                 continue
 
             try:
-                result_data = opencv_method(img_path, debug=False)
-                if isinstance(result_data, tuple):
-                    _, calculated_total = result_data
+                result_data_opencv = opencv_method(img_path, debug=False)
+                if isinstance(result_data_opencv, tuple):
+                    _, calculated_total_opencv = result_data_opencv
                 else:
-                    calculated_total = 0
+                    calculated_total_opencv = 0
 
-                if calculated_total == expected_total:
-                    correct_predictions += 1
+                if calculated_total_opencv == expected_total:
+                    correct_predictions_opencv += 1
                 else:
-                    incorrect_predictions += 1
+                    incorrect_predictions_opencv += 1
             except Exception:
-                incorrect_predictions += 1
+                incorrect_predictions_opencv += 1
+
+            try:
+                result_data_yolo = self.yolo_method(img_path)
+                if isinstance(result_data_yolo, tuple):
+                    _, calculated_total_yolo = result_data_yolo
+                else:
+                    calculated_total_yolo = 0
+
+                if calculated_total_yolo == expected_total:
+                    correct_predictions_yolo += 1
+                else:
+                    incorrect_predictions_yolo += 1
+            except Exception:
+                incorrect_predictions_yolo += 1
 
         self.root.config(cursor="")
         total_images = len(image_paths)
         evaluated_total = total_images - skipped_images
-        correct_ratio = (correct_predictions / evaluated_total) * 100 if evaluated_total > 0 else 0
-        incorrect_ratio = (incorrect_predictions / evaluated_total) * 100 if evaluated_total > 0 else 0
+        correct_ratio_opencv = (correct_predictions_opencv / evaluated_total) * 100 if evaluated_total > 0 else 0
+        incorrect_ratio_opencv = (incorrect_predictions_opencv / evaluated_total) * 100 if evaluated_total > 0 else 0
+        correct_ratio_yolo = (correct_predictions_yolo / evaluated_total) * 100 if evaluated_total > 0 else 0
+        incorrect_ratio_yolo = (incorrect_predictions_yolo / evaluated_total) * 100 if evaluated_total > 0 else 0
 
         result_msg = (
             f"Összes kép a mappában: {len(image_paths)} db\n"
             f"Átugrott (nincs label): {skipped_images} db\n"
             f"Kiértékelt képek: {evaluated_total} db\n\n"
-            f"Helyes felismerés: {correct_predictions} db ({correct_ratio:.2f}%)\n"
-            f"Helytelen felismerés: {incorrect_predictions} db ({incorrect_ratio:.2f}%)"
+            f"── OpenCV eredmények ──\n"
+            f"Helyes felismerés: {correct_predictions_opencv} db ({correct_ratio_opencv:.2f}%)\n"
+            f"Helytelen felismerés: {incorrect_predictions_opencv} db ({incorrect_ratio_opencv:.2f}%)\n\n"
+            f"── YOLO eredmények ──\n"
+            f"Helyes felismerés: {correct_predictions_yolo} db ({correct_ratio_yolo:.2f}%)\n"
+            f"Helytelen felismerés: {incorrect_predictions_yolo} db ({incorrect_ratio_yolo:.2f}%)"
         )
         messagebox.showinfo("Kiértékelés eredménye", result_msg)
