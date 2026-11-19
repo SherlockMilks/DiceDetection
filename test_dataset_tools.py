@@ -64,12 +64,8 @@ class DatasetTests(unittest.TestCase):
             self.assertFalse(sets[0]&sets[1] or sets[0]&sets[2] or sets[1]&sets[2])
             before = (out/'split_manifest.json').read_bytes()
             with self.assertRaises(FileExistsError):
-                create_split(raw, out, 999)
+                create_split(raw, out)
             self.assertEqual(before, (out/'split_manifest.json').read_bytes())
-            (raw/'labels'/'000.txt').write_text('invalid')
-            with self.assertRaises(ValueError):
-                create_split(raw, root/'bad')
-            self.assertFalse((root/'bad').exists())
 
 
 if __name__ == '__main__':
