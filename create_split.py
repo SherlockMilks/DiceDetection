@@ -1,7 +1,7 @@
 from pathlib import Path
 import random
 import shutil
-import yaml
+import json
 
 
 RAW_DIR = Path("data/original")
@@ -15,7 +15,13 @@ SPLIT_RATIOS = (0.8, 0.1)
 
 CLASS_NAMES = ["1", "2", "3", "4", "5", "6"]
 
-def main():
+def create_split(raw_dir=RAW_DIR, output_dir=OUTPUT_DIR):
+    raw_dir, output_dir = Path(raw_dir).resolve(), Path(output_dir).resolve()
+    if output_dir == raw_dir or output_dir in raw_dir.parents or raw_dir in output_dir.parents:
+        raise ValueError('Input and output directories must not contain each other')
+    if output_dir.exists():
+        raise FileExistsError(f'Output already exists; use a new directory: {output_dir}')
+    IMAGES_DIR, LABELS_DIR, OUTPUT_DIR = raw_dir/'images', raw_dir/'labels', output_dir
     if not IMAGES_DIR.is_dir() or not LABELS_DIR.is_dir():
         raise FileNotFoundError(
             f"Expected directories:\n{IMAGES_DIR}\n{LABELS_DIR}"
@@ -45,6 +51,8 @@ def main():
         "val": sorted_ids[n_train:n_train + n_val],
         "test": sorted_ids[n_train + n_val:],
     }
+    if any(not ids for ids in splits.values()):
+        raise ValueError('Too few original groups for three nonempty splits')
 
     for split_name, ids in splits.items():
         image_out = OUTPUT_DIR / "images" / split_name
@@ -71,9 +79,12 @@ def main():
     with (OUTPUT_DIR / "data.yaml").open(
         "w", encoding="utf-8"
     ) as file:
-        yaml.safe_dump(
-            yaml_data, file, sort_keys=False, allow_unicode=True
-        )
+        # JSON syntax is also valid YAML; no extra dependency is necessary.
+        json.dump(yaml_data, file, indent=2)
+    manifest = {'seed': SEED, 'ratios': [0.8, 0.1, 0.1],
+                'group_rule': 'filename stem before __',
+                'splits': {s: [p.name for gid in ids for p in group_ids[gid]] for s, ids in splits.items()}}
+    (OUTPUT_DIR/'split_manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
 
     total_images = len(images)
     print(f"Original images: {total_images}")
@@ -91,5 +102,5 @@ def main():
     print(f"\nDataset split successfully created!")
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    create_split()
