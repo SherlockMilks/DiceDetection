@@ -29,8 +29,8 @@ class DatasetTests(unittest.TestCase):
             (split/'images'/'val'/'1.png').write_bytes((raw/'images'/'0.png').read_bytes())
             result = audit(raw, split)
             self.assertTrue(any('identical image hashes' in e for e in result['errors']))
-            self.assertTrue(any('differs from original' in e for e in result['errors']))
-            original_issues = [i for i in result['review_items'] if i['split'] == 'original']
+            self.assertTrue(any('differs from dice_detection_upper' in e for e in result['errors']))
+            original_issues = [i for i in result['review_items'] if i['split'] == 'dice_detection_upper']
             self.assertEqual(len(original_issues), 1)
             self.assertEqual(original_issues[0]['filename'], '0.png')
             self.assertEqual(len(original_issues[0]['issues']), 2)

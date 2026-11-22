@@ -9,20 +9,20 @@ from dataset_tools import ROOT, image_files, group_id, read_labels
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--images', type=Path, default=ROOT/'data/original/images')
-    parser.add_argument('--labels', type=Path, default=ROOT/'data/original/labels')
+    parser.add_argument('--images', type=Path, default=ROOT/'data/dice_detection_upper/images')
+    parser.add_argument('--labels', type=Path, default=ROOT/'data/dice_detection_upper/labels')
     parser.add_argument('--output', type=Path, default=ROOT/'reports/label_preview')
     parser.add_argument('--limit', type=int, default=0, help='0 means all images')
     parser.add_argument('--originals-only', action='store_true')
     parser.add_argument('--review-json', type=Path,
-                        help='Only show original images flagged by audit_dataset.py')
+                        help='Only show dice_detection_upper images flagged by audit_dataset.py')
     args = parser.parse_args()
     files = image_files(args.images)
     review = {}
     if args.review_json:
         report = json.loads(args.review_json.read_text(encoding='utf-8'))
         review = {item['filename']: item['issues'] for item in report['review_items']
-                  if item['split'] == 'original'}
+                  if item['split'] == 'dice_detection_upper'}
         files = [p for p in files if p.name in review]
     if args.originals_only:
         files = [p for p in files if p.stem == group_id(p)]

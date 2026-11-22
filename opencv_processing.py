@@ -430,6 +430,21 @@ def opencv_method(path, debug=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-    return output, total
+    image_height, image_width = img.shape[:2]
+
+    detections = []
+
+    for x, y, w, h, value in dice_results:
+        detections.append({
+            "class_id": value - 1,
+            "bbox": [
+                (x + w / 2) / image_width,
+                (y + h / 2) / image_height,
+                w / image_width,
+                h / image_height
+            ]
+        })
+
+    return output, total, detections
 
 # TODO : Az összes képre lefuttatni automatikusan és kiértékelni (Helyes/Összes és Helytelen/Összes arány)

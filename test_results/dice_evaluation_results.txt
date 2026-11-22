@@ -1,0 +1,15 @@
+Összes kép a mappában: 84 db
+Átugrott: 0 db
+Kiértékelt képek: 84 db
+
+── OPENCV eredmények ──
+Precision: 77.05%
+Recall: 55.95%
+Helyes képek: 37 db (44.05%)
+Helytelen képek: 47 db (55.95%)
+
+── YOLO eredmények ──
+Precision: 90.22%
+Recall: 98.81%
+Helyes képek: 70 db (83.33%)
+Helytelen képek: 14 db (16.67%)

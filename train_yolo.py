@@ -12,10 +12,6 @@ MODEL = PROJECT_DIR / "data" / "yolo26n.pt"
 
 OUTPUT_DIR = PROJECT_DIR / "runs"
 
-OPTIMIZER = "AdamW"
-LR0 = 0.001
-WEIGHT_DECAY = 0.0005
-
 
 def parse_args():
     parser = argparse.ArgumentParser()

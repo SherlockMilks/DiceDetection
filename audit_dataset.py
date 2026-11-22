@@ -16,7 +16,7 @@ def digest(path):
 def audit(raw, split):
     errors, warnings, summaries, records = [], [], {}, {}
     review_items = []
-    locations = {'original': (raw/'images', raw/'labels')}
+    locations = {'dice_detection_upper': (raw/'images', raw/'labels')}
     locations.update({s: (split/'images'/s, split/'labels'/s) for s in ('train', 'val', 'test')})
     for name, (images_dir, labels_dir) in locations.items():
         counts, object_counts, groups, items = Counter(), Counter(), set(), {}
@@ -79,11 +79,11 @@ def audit(raw, split):
     for name in ('train', 'val', 'test'):
         for filename, item in records[name].items():
             membership[filename].append(name)
-            if filename not in records['original']:
+            if filename not in records['dice_detection_upper']:
                 errors.append(f'{name}: unknown image {filename}')
-            elif item != records['original'][filename]:
-                errors.append(f'{name}: image/label differs from original: {filename}')
-    for filename in records['original']:
+            elif item != records['dice_detection_upper'][filename]:
+                errors.append(f'{name}: image/label differs from dice_detection_upper: {filename}')
+    for filename in records['dice_detection_upper']:
         if len(membership[filename]) != 1:
             errors.append(f'{filename}: expected exactly one split, got {membership[filename]}')
     return {'generated_at': datetime.now(timezone.utc).isoformat(),
@@ -95,7 +95,7 @@ def audit(raw, split):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--raw', type=Path, default=ROOT/'data/original')
+    parser.add_argument('--raw', type=Path, default=ROOT/'data/dice_detection_upper')
     parser.add_argument('--split', type=Path, default=ROOT/'data/dice_yolo')
     parser.add_argument('--output', type=Path, default=ROOT/'reports/data_audit')
     args = parser.parse_args()
