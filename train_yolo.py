@@ -62,7 +62,7 @@ def main():
         data=str(DATA_YAML),
         epochs=100,
         imgsz=832,
-        batch=16,
+        batch=4,
         device=device,
         project=str(OUTPUT_DIR),
         name=run_name,

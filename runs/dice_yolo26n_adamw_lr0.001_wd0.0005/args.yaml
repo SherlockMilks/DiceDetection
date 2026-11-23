@@ -1,7 +1,7 @@
 task: detect
 mode: train
-model: D:\Dice\data\yolo26n.pt
-data: D:\Dice\data\dice_yolo\data.yaml
+model: /home/kancsar/DiceDetection/data/yolo26n.pt
+data: /home/kancsar/DiceDetection/data/dice_yolo/data.yaml
 epochs: 100
 time: null
 patience: 20
@@ -12,7 +12,7 @@ save_period: -1
 cache: false
 device: cpu
 workers: 8
-project: D:\Dice\runs
+project: /home/kancsar/DiceDetection/runs
 name: dice_yolo26n_adamw_lr0.001_wd0.0005
 exist_ok: false
 pretrained: true
@@ -40,12 +40,13 @@ val: true
 split: val
 save_json: false
 conf: null
-iou: 0.7
+iou: null
 max_det: 300
 quantize: null
 dnn: false
 plots: true
 nms: null
+tile: false
 source: null
 vid_stride: 1
 stream_buffer: false
@@ -111,4 +112,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: tracktrack.yaml
-save_dir: D:\Dice\runs\dice_yolo26n_adamw_lr0.001_wd0.0005
+save_dir: /home/kancsar/DiceDetection/runs/dice_yolo26n_adamw_lr0.001_wd0.0005

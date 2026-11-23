@@ -9,7 +9,7 @@ Helyes képek: 37 db (44.05%)
 Helytelen képek: 47 db (55.95%)
 
 ── YOLO eredmények ──
-Precision: 90.22%
-Recall: 98.81%
-Helyes képek: 70 db (83.33%)
-Helytelen képek: 14 db (16.67%)
+Precision: 93.85%
+Recall: 100.00%
+Helyes képek: 75 db (89.29%)
+Helytelen képek: 9 db (10.71%)
